@@ -1,10 +1,14 @@
+interface UnderlyingSourceFinallyCallback {
+  (why: 'close' | 'cancel' | 'error', reason?: any): void | PromiseLike<void>
+}
+
 export interface UnderlyingDefaultSourceWithFinally<R = any>
   extends UnderlyingDefaultSource<R> {
-  finally: () => void | PromiseLike<void>
+  finally: UnderlyingSourceFinallyCallback
 }
 
 export interface UnderlyingByteSourceWithFinally extends UnderlyingByteSource {
-  finally: () => void | PromiseLike<void>
+  finally: UnderlyingSourceFinallyCallback
 }
 
 export type UnderlyingSourceWithFinally<R = any> =
@@ -42,14 +46,15 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
   constructor(private underlyingSource: UnderlyingSourceWithFinally<R>) {
     Object.assign(this, underlyingSource)
     let wrappedController: ReadableStreamController<R> | undefined
-    let closing = false
+    let why: Parameters<UnderlyingSourceFinallyCallback>[0] | undefined
+    let reason: any
     function wrapController(controller: ReadableStreamController<R>) {
       return (
         wrappedController ||
         (wrappedController = Object.create(controller, {
           close: {
             value: () => {
-              closing = true
+              why = 'close'
               controller.close()
             },
           },
@@ -64,22 +69,28 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
           result = fn(arg)
         } catch (err) {
           error = err
-          closing = true
+          if (why !== 'cancel') {
+            reason = err
+            why = 'error'
+          }
         }
         if (isPromise<R>(result)) {
           return result
             .catch((error) => {
-              closing = true
+              if (why !== 'cancel') {
+                why = 'error'
+                reason = error
+              }
               throw error
             })
             .finally(async () => {
-              if (closing) {
-                await underlyingSource.finally()
+              if (why) {
+                await underlyingSource.finally(why, reason)
               }
             })
         }
-        if (closing) {
-          const finallyResult = underlyingSource.finally()
+        if (why) {
+          const finallyResult = underlyingSource.finally(why, reason)
           if (isPromise(finallyResult)) {
             return finallyResult.then(() => {
               if (error) throw error
@@ -104,9 +115,10 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
         underlyingSource.pull?.(wrapController(controller))
       )
     }
-    this.cancel = wrap((reason?: any) => {
-      closing = true
-      return underlyingSource.cancel?.(reason)
+    this.cancel = wrap((_reason?: any) => {
+      why = 'cancel'
+      reason = _reason
+      return underlyingSource.cancel?.(_reason)
     })
   }
 }
