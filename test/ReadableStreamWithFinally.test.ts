@@ -196,6 +196,26 @@ describe(`ReadableStreamWithFinally`, function () {
     })
   })
   describe(`pull()`, function () {
+    it(`close and enqueue`, async function () {
+      let closed: any
+      const stream = new ReadableStreamWithFinally({
+        async pull(controller) {
+          controller.close()
+          controller.enqueue('foo')
+        },
+        async finally(...args) {
+          closed = args
+        },
+      })
+      await slurp(stream)
+      expect(closed).to.deep.equal([
+        'error',
+        Object.assign(
+          new TypeError('Invalid state: Controller is already closed'),
+          { code: 'ERR_INVALID_STATE' }
+        ),
+      ])
+    })
     it(`pull() closes sync, sync finally`, async function () {
       let closed: any
       const result = await slurp(
