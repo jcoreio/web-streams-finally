@@ -58,6 +58,13 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
               controller.close()
             },
           },
+          error: {
+            value: (error?: any) => {
+              why = 'error'
+              reason = error
+              controller.error(error)
+            },
+          },
         }))
       )
     }
