@@ -30,7 +30,8 @@
     "eslint": "^8.56.0",
     "eslint-plugin-no-only-tests": "^3.1.0",
     "mocha": "^10.2.0",
-    "typescript": "^5.1.0"
+    "typescript": "^5.1.0",
+    "waait": "^1.0.5"
   },
   "version": "0.0.0-development",
   "sideEffects": false,

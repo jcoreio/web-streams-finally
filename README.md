@@ -21,3 +21,21 @@ const stream = new ReadableStreamWithFinally({
   }
 })
 ```
+
+## `ReadableStreamWithSignal`
+
+```ts
+import { ReadableStreamWithSignal } from '@jcoreio/web-streams-finally'
+
+const stream = new ReadableStreamWithSignal({
+  async pull(controller) {
+    await doSomething({
+      signal: controller.signal, // will be aborted when stream errors is closed, canceled, or errored
+    })
+    ...
+  },
+  async finally(why: 'close' | 'cancel' | 'error', reason?: any) {
+    // this will be called when the stream is closed, canceled, or errored
+  }
+})
+```
