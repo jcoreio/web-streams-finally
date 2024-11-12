@@ -68,6 +68,12 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
         }))
       )
     }
+    let cleanupResult: [any] | undefined
+    function cleanup(why: 'close' | 'cancel' | 'error', reason?: any) {
+      if (cleanupResult) return cleanupResult[0]
+      cleanupResult = [underlyingSource.finally(why, reason)]
+      return cleanupResult
+    }
     function wrap<Arg>(fn: (controller: Arg) => void | PromiseLike<void>) {
       return (arg: Arg) => {
         let result: any
@@ -92,12 +98,12 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
             })
             .finally(async () => {
               if (why) {
-                await underlyingSource.finally(why, reason)
+                await cleanup(why, reason)
               }
             })
         }
         if (why) {
-          const finallyResult = underlyingSource.finally(why, reason)
+          const finallyResult = cleanup(why, reason)
           if (isPromise(finallyResult)) {
             return finallyResult.then(() => {
               if (error) throw error
