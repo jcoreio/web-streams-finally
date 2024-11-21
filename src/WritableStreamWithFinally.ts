@@ -8,7 +8,7 @@ export interface UnderlyingSinkWithFinally<W = any> extends UnderlyingSink<W> {
 
 export class WritableStreamWithFinally<W = any> extends WritableStream<W> {
   constructor(
-    underlyingSink: UnderlyingSinkWithFinally,
+    underlyingSink: UnderlyingSinkWithFinally<W>,
     strategy?: QueuingStrategy<W>
   ) {
     super(new WritableStreamCleanupHandler<W>(underlyingSink), strategy)
