@@ -39,3 +39,18 @@ const stream = new ReadableStreamWithSignal({
   }
 })
 ```
+
+## `WritableStreamWithFinally`
+
+```ts
+import { WritableStreamWithFinally } from '@jcoreio/web-streams-finally'
+
+const stream = new WritableStreamWithFinally({
+  async write(controller) {
+    ...
+  },
+  async finally(why: 'close' | 'abort' | 'error', reason?: any) {
+    // this will be called when the stream is closed, aborted, or errored
+  }
+})
+```
