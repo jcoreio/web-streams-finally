@@ -5,10 +5,14 @@ interface UnderlyingSourceFinallyCallback {
 export interface UnderlyingDefaultSourceWithSignal<R = any> {
   cancel?: UnderlyingSourceCancelCallback
   pull?: (
-    controller: ReadableStreamDefaultController<R> & { signal: AbortSignal }
+    controller: ReadableStreamDefaultController<R> & {
+      signal: AbortSignal
+    }
   ) => void | PromiseLike<void>
   start?: (
-    controller: ReadableStreamDefaultController<R> & { signal: AbortSignal }
+    controller: ReadableStreamDefaultController<R> & {
+      signal: AbortSignal
+    }
   ) => any
   finally: UnderlyingSourceFinallyCallback
   type?: undefined
@@ -18,10 +22,14 @@ export interface UnderlyingByteSourceWithSignal {
   autoAllocateChunkSize?: number
   cancel?: UnderlyingSourceCancelCallback
   pull?: (
-    controller: ReadableByteStreamController & { signal: AbortSignal }
+    controller: ReadableByteStreamController & {
+      signal: AbortSignal
+    }
   ) => void | PromiseLike<void>
   start?: (
-    controller: ReadableByteStreamController & { signal: AbortSignal }
+    controller: ReadableByteStreamController & {
+      signal: AbortSignal
+    }
   ) => any
   finally: UnderlyingSourceFinallyCallback
   type: 'bytes'
@@ -38,7 +46,9 @@ export type UnderlyingSourceWithSignal<R = any> =
 export class ReadableStreamWithSignal<R = any> extends ReadableStream<R> {
   constructor(
     underlyingSource: UnderlyingByteSourceWithSignal,
-    strategy?: { highWaterMark?: number }
+    strategy?: {
+      highWaterMark?: number
+    }
   )
   constructor(
     underlyingSource: UnderlyingDefaultSourceWithSignal<R>,
@@ -64,7 +74,9 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
     const abortController = new AbortController()
     const { signal } = abortController
     let wrappedController:
-      | (ReadableStreamController<R> & { signal: AbortSignal })
+      | (ReadableStreamController<R> & {
+          signal: AbortSignal
+        })
       | undefined
     let why: Parameters<UnderlyingSourceFinallyCallback>[0] | undefined
     let reason: any
@@ -112,19 +124,22 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
           }
         }
         if (isPromise<R>(result)) {
-          return result
-            .catch((error) => {
-              if (why !== 'cancel') {
-                why = 'error'
-                reason = error
-              }
-              throw error
-            })
-            .finally(async () => {
-              if (why) {
-                await cleanup(why, reason)
-              }
-            })
+          return (
+            result
+              .catch((error: unknown) => {
+                if (why !== 'cancel') {
+                  why = 'error'
+                  reason = error
+                }
+                throw error
+              })
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
+              .finally(async () => {
+                if (why) {
+                  await cleanup(why, reason)
+                }
+              })
+          )
         }
         if (why) {
           const finallyResult = cleanup(why, reason)

@@ -37,7 +37,7 @@ export function safeIterateReadableStream<T>(
                 if (result.done) await cleanup()
                 return result
               },
-              async (error) => {
+              async (error: unknown) => {
                 await cleanup()
                 throw error
               }

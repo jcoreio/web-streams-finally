@@ -22,7 +22,9 @@ export type UnderlyingSourceWithFinally<R = any> =
 export class ReadableStreamWithFinally<R = any> extends ReadableStream<R> {
   constructor(
     underlyingSource: UnderlyingByteSourceWithFinally,
-    strategy?: { highWaterMark?: number }
+    strategy?: {
+      highWaterMark?: number
+    }
   )
   constructor(
     underlyingSource: UnderlyingDefaultSourceWithFinally<R>,
@@ -88,19 +90,22 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
           }
         }
         if (isPromise<R>(result)) {
-          return result
-            .catch((error) => {
-              if (why !== 'cancel') {
-                why = 'error'
-                reason = error
-              }
-              throw error
-            })
-            .finally(async () => {
-              if (why) {
-                await cleanup(why, reason)
-              }
-            })
+          return (
+            result
+              .catch((error: unknown) => {
+                if (why !== 'cancel') {
+                  why = 'error'
+                  reason = error
+                }
+                throw error
+              })
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
+              .finally(async () => {
+                if (why) {
+                  await cleanup(why, reason)
+                }
+              })
+          )
         }
         if (why) {
           const finallyResult = cleanup(why, reason)

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+
 import { expect } from 'chai'
 import { ReadableStreamWithSignal } from '../src/index'
 import slurp from './slurp'
@@ -74,10 +76,12 @@ describe(`ReadableStreamWithSignal`, function () {
           safeIterateReadableStream(
             new ReadableStreamWithSignal({
               async start(controller) {
-                await abortable(delay(1000), controller.signal).catch((e) => {
-                  waitError = e
-                  throw e
-                })
+                await abortable(delay(1000), controller.signal).catch(
+                  (e: unknown) => {
+                    waitError = e
+                    throw e
+                  }
+                )
                 enqueued = true
                 controller.enqueue(1)
               },
@@ -89,7 +93,7 @@ describe(`ReadableStreamWithSignal`, function () {
           )
         ),
         delay(100).then(() => abortController.abort()),
-      ]).catch((error) => {
+      ]).catch((error: unknown) => {
         expect(error).to.deep.equal(newAbortError())
       })
       expect(waitError).to.deep.equal(newAbortError())
@@ -286,7 +290,9 @@ describe(`ReadableStreamWithSignal`, function () {
         'error',
         Object.assign(
           new TypeError('Invalid state: Controller is already closed'),
-          { code: 'ERR_INVALID_STATE' }
+          {
+            code: 'ERR_INVALID_STATE',
+          }
         ),
       ])
     })
@@ -306,7 +312,9 @@ describe(`ReadableStreamWithSignal`, function () {
         'error',
         Object.assign(
           new TypeError('Invalid state: Controller is already closed'),
-          { code: 'ERR_INVALID_STATE' }
+          {
+            code: 'ERR_INVALID_STATE',
+          }
         ),
       ])
     })
@@ -320,10 +328,12 @@ describe(`ReadableStreamWithSignal`, function () {
           safeIterateReadableStream(
             new ReadableStreamWithSignal({
               async pull(controller) {
-                await abortable(delay(1000), controller.signal).catch((e) => {
-                  waitError = e
-                  throw e
-                })
+                await abortable(delay(1000), controller.signal).catch(
+                  (e: unknown) => {
+                    waitError = e
+                    throw e
+                  }
+                )
                 enqueued = true
                 controller.enqueue(1)
               },
@@ -335,7 +345,7 @@ describe(`ReadableStreamWithSignal`, function () {
           )
         ),
         delay(100).then(() => abortController.abort()),
-      ]).catch((error) => {
+      ]).catch((error: unknown) => {
         expect(error).to.deep.equal(newAbortError())
       })
       expect(waitError).to.deep.equal(newAbortError())
@@ -506,7 +516,7 @@ describe(`ReadableStreamWithSignal`, function () {
           closed = args
         },
       })
-      stream.cancel()
+      void stream.cancel()
       expect(await slurp(stream)).to.deep.equal([])
       expect(closed).to.deep.equal(['cancel', undefined])
     })
@@ -517,7 +527,7 @@ describe(`ReadableStreamWithSignal`, function () {
           closed = args
         },
       })
-      stream.cancel()
+      void stream.cancel()
       expect(await slurp(stream)).to.deep.equal([])
       expect(closed).to.deep.equal(['cancel', undefined])
     })
@@ -534,7 +544,7 @@ describe(`ReadableStreamWithSignal`, function () {
           closed = args
         },
       })
-      stream.cancel('test')
+      void stream.cancel('test')
       await slurp(stream)
       expect(canceled).to.be.true
       expect(closed).to.deep.equal(['cancel', 'test'])
@@ -551,7 +561,7 @@ describe(`ReadableStreamWithSignal`, function () {
           closed = args
         },
       })
-      stream.cancel('test')
+      void stream.cancel('test')
       await slurp(stream)
       expect(canceled).to.be.true
       expect(closed).to.deep.equal(['cancel', 'test'])
@@ -569,7 +579,7 @@ describe(`ReadableStreamWithSignal`, function () {
           closed = args
         },
       })
-      stream.cancel('test')
+      void stream.cancel('test')
       await slurp(stream)
       expect(canceled).to.be.true
       expect(closed).to.deep.equal(['cancel', 'test'])
@@ -587,7 +597,7 @@ describe(`ReadableStreamWithSignal`, function () {
           closed = args
         },
       })
-      stream.cancel('test')
+      void stream.cancel('test')
       await slurp(stream)
       expect(canceled).to.be.true
       expect(closed).to.deep.equal(['cancel', 'test'])
@@ -605,7 +615,7 @@ describe(`ReadableStreamWithSignal`, function () {
           closed = args
         },
       })
-      stream.cancel('test')
+      void stream.cancel('test')
       await slurp(stream)
       expect(canceled).to.be.true
       expect(closed).to.deep.equal(['cancel', 'test'])
@@ -623,7 +633,7 @@ describe(`ReadableStreamWithSignal`, function () {
           closed = args
         },
       })
-      stream.cancel('test')
+      void stream.cancel('test')
       await slurp(stream)
       expect(canceled).to.be.true
       expect(closed).to.deep.equal(['cancel', 'test'])

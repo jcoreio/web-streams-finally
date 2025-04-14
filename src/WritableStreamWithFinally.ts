@@ -61,19 +61,22 @@ class WritableStreamCleanupHandler<W = any> implements UnderlyingSink<W> {
           }
         }
         if (isPromise<W>(result)) {
-          return result
-            .catch((error) => {
-              if (why !== 'abort') {
-                why = 'error'
-                reason = error
-              }
-              throw error
-            })
-            .finally(async () => {
-              if (why) {
-                await cleanup(why, reason)
-              }
-            })
+          return (
+            result
+              .catch((error: unknown) => {
+                if (why !== 'abort') {
+                  why = 'error'
+                  reason = error
+                }
+                throw error
+              })
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
+              .finally(async () => {
+                if (why) {
+                  await cleanup(why, reason)
+                }
+              })
+          )
         }
         if (why) {
           const finallyResult = cleanup(why, reason)

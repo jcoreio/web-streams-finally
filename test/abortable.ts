@@ -30,7 +30,7 @@ export function abortable<T>(
     signal.addEventListener('abort', onAbort)
     promise.then(
       (value) => cleanup().resolve(value),
-      (error) => cleanup().reject(error)
+      (error: unknown) => cleanup().reject(error)
     )
   })
 }
