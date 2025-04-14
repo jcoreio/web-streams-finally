@@ -96,7 +96,7 @@ class ReadableStreamCleanupHandler<R = any> implements UnderlyingSource<R> {
       if (cleanupResult) return cleanupResult[0]
       cleanupResult = [underlyingSource.finally(why, reason)]
       abortController.abort()
-      return cleanupResult
+      return cleanupResult[0]
     }
     function wrap<Arg>(fn: (controller: Arg) => void | PromiseLike<void>) {
       return (arg: Arg) => {

@@ -43,7 +43,7 @@ class WritableStreamCleanupHandler<W = any> implements UnderlyingSink<W> {
     function cleanup(why: 'close' | 'abort' | 'error', reason?: any) {
       if (cleanupResult) return cleanupResult[0]
       cleanupResult = [underlyingSink.finally(why, reason)]
-      return cleanupResult
+      return cleanupResult[0]
     }
     function wrap<Args extends any[]>(
       fn: (...args: Args) => void | PromiseLike<void>

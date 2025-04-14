@@ -16,6 +16,20 @@ describe(`WritableStreamWithFinally`, function () {
       await writer.close()
       expect(closed).to.deep.equal(['close', undefined])
     })
+    it(`start() returns, sync finally throws`, async function () {
+      let closed: any
+      const stream = new WritableStreamWithFinally({
+        start() {},
+        finally(...args) {
+          closed = args
+          throw new Error('test')
+        },
+      })
+      const writer = stream.getWriter()
+      await writer.write()
+      await expect(writer.close()).to.be.rejectedWith('test')
+      expect(closed).to.deep.equal(['close', undefined])
+    })
     it(`start() resolves, sync finally`, async function () {
       let closed: any
       const stream = new WritableStreamWithFinally({
@@ -50,6 +64,28 @@ describe(`WritableStreamWithFinally`, function () {
       expect(closed).to.deep.equal(['error', new Error('test')])
       expect(error).to.deep.equal(new Error('test'))
     })
+    it(`start() throws, sync finally throws`, async function () {
+      let error: any
+      let closed: any
+      try {
+        const stream = new WritableStreamWithFinally({
+          start() {
+            throw new Error('test')
+          },
+          finally(...args) {
+            closed = args
+            throw new Error('test 2')
+          },
+        })
+        const writer = stream.getWriter()
+        await writer.write()
+        await writer.close()
+      } catch (err) {
+        error = err
+      }
+      expect(closed).to.deep.equal(['error', new Error('test')])
+      expect(error).to.deep.equal(new Error('test 2'))
+    })
     it(`start() throws, async finally`, async function () {
       let error: any
       let closed: any
@@ -70,6 +106,28 @@ describe(`WritableStreamWithFinally`, function () {
       }
       expect(closed).to.deep.equal(['error', new Error('test')])
       expect(error).to.deep.equal(new Error('test'))
+    })
+    it(`start() throws, async finally throws`, async function () {
+      let error: any
+      let closed: any
+      try {
+        const stream = new WritableStreamWithFinally({
+          start() {
+            throw new Error('test')
+          },
+          async finally(...args) {
+            closed = args
+            throw new Error('test 2')
+          },
+        })
+        const writer = stream.getWriter()
+        await writer.write()
+        await writer.close()
+      } catch (err) {
+        error = err
+      }
+      expect(closed).to.deep.equal(['error', new Error('test')])
+      expect(error).to.deep.equal(new Error('test 2'))
     })
     it(`start() calls controller.error(), sync finally`, async function () {
       let error: any
@@ -92,6 +150,28 @@ describe(`WritableStreamWithFinally`, function () {
       expect(closed).to.deep.equal(['error', new Error('test')])
       expect(error).to.deep.equal(new Error('test'))
     })
+    it(`start() calls controller.error(), sync finally throws`, async function () {
+      let error: any
+      let closed: any
+      try {
+        const stream = new WritableStreamWithFinally({
+          start(controller) {
+            controller.error(new Error('test'))
+          },
+          finally(...args) {
+            closed = args
+            throw new Error('test 2')
+          },
+        })
+        const writer = stream.getWriter()
+        await writer.write()
+        await writer.close()
+      } catch (err) {
+        error = err
+      }
+      expect(closed).to.deep.equal(['error', new Error('test')])
+      expect(error).to.deep.equal(new Error('test 2'))
+    })
     it(`start() calls controller.error(), async finally`, async function () {
       let error: any
       let closed: any
@@ -102,6 +182,28 @@ describe(`WritableStreamWithFinally`, function () {
           },
           async finally(...args) {
             closed = args
+          },
+        })
+        const writer = stream.getWriter()
+        await writer.write()
+        await writer.close()
+      } catch (err) {
+        error = err
+      }
+      expect(closed).to.deep.equal(['error', new Error('test')])
+      expect(error).to.deep.equal(new Error('test'))
+    })
+    it(`start() calls controller.error(), async finally throws`, async function () {
+      let error: any
+      let closed: any
+      try {
+        const stream = new WritableStreamWithFinally({
+          start(controller) {
+            controller.error(new Error('test'))
+          },
+          async finally(...args) {
+            closed = args
+            throw new Error('test 2')
           },
         })
         const writer = stream.getWriter()

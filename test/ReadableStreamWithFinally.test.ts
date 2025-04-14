@@ -22,6 +22,44 @@ describe(`ReadableStreamWithFinally`, function () {
       expect(closed).to.deep.equal(['close', undefined])
       expect(result).to.deep.equal([1])
     })
+    it(`start() returns, sync finally throws`, async function () {
+      let closed: any
+      const result = await slurp(
+        new ReadableStreamWithFinally({
+          start(controller) {
+            controller.enqueue(1)
+          },
+          pull(controller) {
+            controller.close()
+          },
+          finally(...args) {
+            closed = args
+            throw new Error('test')
+          },
+        })
+      ).catch((err) => err)
+      expect(closed).to.deep.equal(['close', undefined])
+      expect(result).to.deep.equal([1])
+    })
+    it(`start() returns, async finally throws`, async function () {
+      let closed: any
+      const result = await slurp(
+        new ReadableStreamWithFinally({
+          start(controller) {
+            controller.enqueue(1)
+          },
+          pull(controller) {
+            controller.close()
+          },
+          async finally(...args) {
+            closed = args
+            throw new Error('test')
+          },
+        })
+      ).catch((err) => err)
+      expect(closed).to.deep.equal(['close', undefined])
+      expect(result).to.deep.equal([1])
+    })
     it(`start() resolves, sync finally`, async function () {
       let closed: any
       const result = await slurp(
@@ -94,6 +132,27 @@ describe(`ReadableStreamWithFinally`, function () {
       expect(closed).to.deep.equal(['error', new Error('test')])
       expect(error).to.deep.equal(new Error('test'))
     })
+    it(`start() throws, sync finally throws`, async function () {
+      let error: any
+      let closed: any
+      try {
+        await slurp(
+          new ReadableStreamWithFinally({
+            start() {
+              throw new Error('test')
+            },
+            finally(...args) {
+              closed = args
+              throw new Error('test 2')
+            },
+          })
+        )
+      } catch (err) {
+        error = err
+      }
+      expect(closed).to.deep.equal(['error', new Error('test')])
+      expect(error).to.deep.equal(new Error('test 2'))
+    })
     it(`start() throws, async finally`, async function () {
       let error: any
       let closed: any
@@ -113,6 +172,27 @@ describe(`ReadableStreamWithFinally`, function () {
       }
       expect(closed).to.deep.equal(['error', new Error('test')])
       expect(error).to.deep.equal(new Error('test'))
+    })
+    it(`start() throws, async finally throws`, async function () {
+      let error: any
+      let closed: any
+      try {
+        await slurp(
+          new ReadableStreamWithFinally({
+            start() {
+              throw new Error('test')
+            },
+            async finally(...args) {
+              closed = args
+              throw new Error('test 2')
+            },
+          })
+        )
+      } catch (err) {
+        error = err
+      }
+      expect(closed).to.deep.equal(['error', new Error('test')])
+      expect(error).to.deep.equal(new Error('test 2'))
     })
     it(`start() calls controller.error(), sync finally`, async function () {
       let error: any

@@ -26,6 +26,44 @@ describe(`ReadableStreamWithSignal`, function () {
       expect(closed).to.deep.equal(['close', undefined])
       expect(result).to.deep.equal([1])
     })
+    it(`start() returns, sync finally throws`, async function () {
+      let closed: any
+      const result = await slurp(
+        new ReadableStreamWithSignal({
+          start(controller) {
+            controller.enqueue(1)
+          },
+          pull(controller) {
+            controller.close()
+          },
+          finally(...args) {
+            closed = args
+            throw new Error('test')
+          },
+        })
+      )
+      expect(closed).to.deep.equal(['close', undefined])
+      expect(result).to.deep.equal([1])
+    })
+    it(`start() returns, async finally throws`, async function () {
+      let closed: any
+      const result = await slurp(
+        new ReadableStreamWithSignal({
+          start(controller) {
+            controller.enqueue(1)
+          },
+          pull(controller) {
+            controller.close()
+          },
+          async finally(...args) {
+            closed = args
+            throw new Error('test')
+          },
+        })
+      )
+      expect(closed).to.deep.equal(['close', undefined])
+      expect(result).to.deep.equal([1])
+    })
     it(`start() gets aborted, sync finally`, async function () {
       let closed: any
       const abortController = new AbortController()
